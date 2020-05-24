@@ -48,10 +48,10 @@ void loop() {
   lcd.backlight();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
-  lcd.setCursor(0, 1);
-  lcd.print("Pressed button=");
-  lcd.setCursor(18, 1);
-  lcd.print(pressedButton);
+  #lcd.setCursor(0, 1);
+  #lcd.print("Pressed button=");
+  #lcd.setCursor(18, 1);
+  #lcd.print(pressedButton);
   Serial.println("Got a button...");
   delay(250);
 
