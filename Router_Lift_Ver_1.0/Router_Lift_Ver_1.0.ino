@@ -1,28 +1,37 @@
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
-
-LiquidCrystal_I2C lcd(0x27, 20, 4);
-float currentPos = 1.267;
-
-/* ReadButton Ver2
-    This is the final version
+/* Router Lift Version 1.0
+    Reads buttons
     Reads 4 digits from the keypad
     if "#" is pressed it pads with "0"'s
     coverts input digits to x.xxx format variable
 */
+//I2C Libraries and setup
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27, 20, 4);
+//AccelStepper Library and setup
+#include <AccelStepper.h>
+int stepsPerRevolution = 2048;
+int motSpeed = 3;
+int dt = 500;
+AccelStepper stepper; // Defaults to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4, 5
+float currentPos = 1.267;
+
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(9600);
   delay(250);
-
-  lcd.init();                      // initialize the lcd
+  // initialize the lcd
+  lcd.init();
   lcd.init();
   // Print a message to the LCD.
   lcd.backlight();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
+  //Stepper max speed and acceleration
 
-  Serial.println(currentPos,3);
+
+
+
+  Serial.println(currentPos, 3);
 
   //Set pins for input from the keypad
   for (int i = 22; i <= 33; i++) {
@@ -40,19 +49,21 @@ void loop() {
   int myButton;
   int pressedButton = 0;
   int pressedKey;
+  int targetSteps;
 
   pressedButton = getButton(pressedButton);
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
+  //#include <Wire.h>
+  //#include <LiquidCrystal_I2C.h>
 
   lcd.backlight();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
-  #lcd.setCursor(0, 1);
-  #lcd.print("Pressed button=");
-  #lcd.setCursor(18, 1);
-  #lcd.print(pressedButton);
-  Serial.println("Got a button...");
+  //lcd.setCursor(0, 1);
+  //lcd.print("Pressed button=");
+  //lcd.setCursor(18, 1);
+  //lcd.print(pressedButton);
+  Serial.print("Got a button...");
+  Serial.println(pressedButton);
   delay(250);
 
   if (pressedButton == 1) {
@@ -71,7 +82,7 @@ void loop() {
     moveUp();
   }
   if (pressedButton == 6) {
-    moveUp();
+    moveDown();
   }
   if (pressedButton == 7) {
     bitChange();
@@ -89,7 +100,7 @@ void loop() {
     cutMortise();
   }
 }
-
+// Move the router down to the park position
 float moveToPark() {
   lcd.init();
   lcd.setCursor(2, 0);
@@ -103,7 +114,7 @@ float moveToPark() {
   lcd.print(currentPos, 3);
   delay(1000);
 }
-
+//Move up by .001"
 float moveUpByStep() {
   lcd.init();
   lcd.setCursor(2, 0);
@@ -116,8 +127,15 @@ float moveUpByStep() {
   lcd.setCursor(15, 3);
   lcd.print(currentPos, 3);
   delay(1000);
+  int speed = 500;
+  int accel = 5;
+  int targetSteps = 25;
+  stepper.setMaxSpeed(speed);
+  stepper.setAcceleration(accel);
+  stepper.moveTo(targetSteps);
+  moveRouter(targetSteps);
 }
-
+//Move down .001"
 float moveDownByStep() {
   lcd.init();
   lcd.setCursor(2, 0);
@@ -131,7 +149,7 @@ float moveDownByStep() {
   lcd.print(currentPos, 3);
   delay(1000);
 }
-
+//Move up while button is pushed
 float moveUp() {
   lcd.init();
   lcd.setCursor(2, 0);
@@ -145,7 +163,7 @@ float moveUp() {
   lcd.print(currentPos, 3);
   delay(1000);
 }
-
+//Move down while button is pushed
 float moveDown() {
   lcd.init();
   lcd.setCursor(2, 0);
@@ -159,7 +177,7 @@ float moveDown() {
   lcd.print(currentPos, 3);
   delay(1000);
 }
-
+//Move router up to change bit
 float bitChange() {
   lcd.init();
   lcd.setCursor(2, 0);
@@ -173,7 +191,7 @@ float bitChange() {
   lcd.print(currentPos, 3);
   delay(1000);
 }
-
+//Move router up until bit touches plate
 float zeroSet() {
   lcd.init();
   lcd.setCursor(2, 0);
@@ -187,7 +205,7 @@ float zeroSet() {
   lcd.print(currentPos, 3);
   delay(1000);
 }
-
+//Save current position to Memory Location
 float memorySave() {
   lcd.init();
   lcd.setCursor(2, 0);
@@ -201,7 +219,7 @@ float memorySave() {
   lcd.print(currentPos, 3);
   delay(1000);
 }
-
+//Recall Memory Location and move route to that position
 float memoryRecall() {
   lcd.init();
   lcd.setCursor(2, 0);
@@ -215,7 +233,7 @@ float memoryRecall() {
   lcd.print(currentPos, 3);
   delay(1000);
 }
-
+//Move router up by step to cut a mortise
 float cutMortise() {
   lcd.init();
   lcd.setCursor(2, 0);
@@ -229,6 +247,7 @@ float cutMortise() {
   lcd.print(currentPos, 3);
   delay(1000);
 }
+//Move router to the depth entered on the keypad
 float moveToDepth(int pressedKey) {
   lcd.init();
   float inch;
@@ -251,7 +270,7 @@ float moveToDepth(int pressedKey) {
       inputKey[i] = 0;
       break;
     }
-   
+
     delay(250);
   }
   TargetDepth = inputKey[0] + inputKey[1] / 10 + inputKey[2] / 100 + inputKey[3] / 1000;
@@ -268,7 +287,7 @@ float moveToDepth(int pressedKey) {
   lcd.setCursor(15, 3);
   lcd.print(currentPos, 3);
 }
-
+//Subroutine to loop until a button is pressed
 int getButton(int pressedButton) {
   int readButton;
   int gotButtonPress = 0;
@@ -284,7 +303,7 @@ int getButton(int pressedButton) {
     }
   }
 }
-
+//Subroutine to read data from the keypad
 int getKey(int pressedKey) {
   int readPin;
   int gotKeyPress = 0;
@@ -297,6 +316,33 @@ int getKey(int pressedKey) {
       if (readPin == 0) {
         pressedKey = pinValue[i];
         return pressedKey;
+      }
+    }
+  }
+}
+//Subroutine to move the router with the stepper motor
+int moveRouter(int targetSteps) {
+  int readButton;
+  for (int i = 1; i = targetSteps; i++) {
+    //while (targetSteps >= stepper.currentPosition()) {
+    //  Serial.println(stepper.distanceToGo());
+    //  if (stepper.distanceToGo() == 0)
+    //    stepper.moveTo(targetSteps);
+    int currentPos = stepper.currentPosition();
+    int distToGo = stepper.distanceToGo();
+    Serial.print(targetSteps);
+    Serial.print("   ");
+    Serial.print(stepper.currentPosition());
+    Serial.print("   ");
+    Serial.println(stepper.distanceToGo());
+    delay(500);
+    stepper.run();
+    readButton = digitalRead(51);
+    if (readButton == 0) {
+      Serial.println("Limit Switch Detected");
+      break;
+      if (targetSteps == stepper.currentPosition()) {
+        break;
       }
     }
   }
