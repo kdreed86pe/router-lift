@@ -10,11 +10,15 @@
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 //AccelStepper Library and setup
 #include <AccelStepper.h>
-int stepsPerRevolution = 2048;
-int motSpeed = 3;
+int stepsPerRevolution = 200;
+int motorSpeed = 400;
+int motorAcceleration = 800;
+int moveToLimit = 150;
 int dt = 500;
 AccelStepper stepper; // Defaults to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4, 5
-float currentPos = 1.267;
+int currentPos;
+int targetPosition;
+float distancePerStep = 0.000625;
 
 void setup() {
   Serial.begin(9600);
@@ -27,8 +31,8 @@ void setup() {
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
   //Stepper max speed and acceleration
-
-
+  stepper.setMaxSpeed(motorSpeed);
+  stepper.setAcceleration(motorAcceleration);
 
 
   Serial.println(currentPos, 3);
@@ -41,6 +45,10 @@ void setup() {
   for (int i = 40; i <= 52; i++) {
     pinMode(i, INPUT_PULLUP);
   }
+  //Set pins for input from the limit switches
+  for (int i = 34; i <= 35; i++) {
+    pinMode(i, INPUT_PULLUP);
+  }
 }
 void loop() {
   // put your main code here, to run repeatedly:
@@ -50,6 +58,10 @@ void loop() {
   int pressedButton = 0;
   int pressedKey;
   int targetSteps;
+  bool newData;
+  bool runAllowed = false;
+  int stepperDirection;
+  int moveToLimit = 150;
 
   pressedButton = getButton(pressedButton);
   //#include <Wire.h>
@@ -99,6 +111,11 @@ void loop() {
   if (pressedButton == 11) {
     cutMortise();
   }
+  if (pressedButton == 13) {
+    lcd.setCursor(3, 2);
+    lcd.print("Limit Switch");
+    Serial.println("Limit Switch");
+  }
 }
 // Move the router down to the park position
 float moveToPark() {
@@ -113,6 +130,21 @@ float moveToPark() {
   lcd.setCursor(15, 3);
   lcd.print(currentPos, 3);
   delay(1000);
+  stepper.setCurrentPosition(0);
+  Serial.print("current position: ");
+  Serial.println(stepper.currentPosition());
+  int stepperDirection = 1;
+  stepper.setMaxSpeed(motorSpeed);
+  stepper.setAcceleration(motorAcceleration);
+  stepper.move(stepperDirection * moveToLimit);
+  targetPosition=stepper.targetPosition();
+  Serial.print("target position is:");
+  Serial.println(stepper.targetPosition());
+  stepper.run();
+  Serial.print("current position is:");
+  Serial.println(stepper.currentPosition());
+  lcd.setCursor(15, 3);
+  lcd.print(currentPos, 3);
 }
 //Move up by .001"
 float moveUpByStep() {
@@ -204,6 +236,16 @@ float zeroSet() {
   lcd.setCursor(15, 3);
   lcd.print(currentPos, 3);
   delay(1000);
+  int speed = 400;
+  int accel = 800;
+  int targetSteps = 5000;
+  stepper.setMaxSpeed(speed);
+  stepper.setAcceleration(accel);
+  stepper.moveTo(targetSteps);
+  moveRouter(targetSteps);
+  currentPos = 0;
+  lcd.setCursor(15, 3);
+  lcd.print(currentPos, 3);
 }
 //Save current position to Memory Location
 float memorySave() {
@@ -323,27 +365,27 @@ int getKey(int pressedKey) {
 //Subroutine to move the router with the stepper motor
 int moveRouter(int targetSteps) {
   int readButton;
+//  Serial.println("tgt steps  curr pos  distance to go");
   for (int i = 1; i = targetSteps; i++) {
-    //while (targetSteps >= stepper.currentPosition()) {
-    //  Serial.println(stepper.distanceToGo());
-    //  if (stepper.distanceToGo() == 0)
-    //    stepper.moveTo(targetSteps);
     int currentPos = stepper.currentPosition();
     int distToGo = stepper.distanceToGo();
-    Serial.print(targetSteps);
-    Serial.print("   ");
-    Serial.print(stepper.currentPosition());
-    Serial.print("   ");
-    Serial.println(stepper.distanceToGo());
-    delay(500);
+//   Serial.print(targetSteps);
+//   Serial.print("        ");
+//   Serial.print(stepper.currentPosition());
+//   Serial.print("        ");
+//   Serial.println(stepper.distanceToGo());
+//   delay(250);
     stepper.run();
-    readButton = digitalRead(51);
+    readButton = digitalRead(35);
     if (readButton == 0) {
       Serial.println("Limit Switch Detected");
       break;
-      if (targetSteps == stepper.currentPosition()) {
+    }
+    if (targetSteps == currentPos) {
         break;
       }
-    }
   }
+  stepper.setCurrentPosition(0);
+  Serial.print("current position is: ");
+  Serial.println(stepper.currentPosition());
 }
