@@ -62,7 +62,7 @@ void loop() {
   bool newData;
   bool runAllowed = false;
   int stepperDirection;
-  int moveToLimit = 150;
+  int moveToLimit = 150; // Change to move to upper and lower limit swtiches
 
   pressedButton = getButton(pressedButton);
 
@@ -106,11 +106,6 @@ void loop() {
   if (pressedButton == 11) {
     cutMortise();
   }
-  if (pressedButton == 13) {
-    lcd.setCursor(3, 2);
-    lcd.print("Limit Switch");
-    Serial.println("Limit Switch");
-  }
 }
 
 // Move the router down to the park position
@@ -127,12 +122,14 @@ float moveToPark() {
   lcd.print(currentPos, 3);
   delay(1000);
   int speed = 400;
-  int accel=800;
-  int targetSteps=5000;int stepperDirection = -1;
+  int accel = 800;
+  int targetSteps = 5000;
+  int stepperDirection = -1;
   stepper.setMaxSpeed(speed);
   stepper.setAcceleration(accel);
-  moveRouter(targetSteps,stepperDirection);
-  currentPos=stepper.currentPosition();
+  //Cakk moveRouter to move down to Park position
+  moveRouter(targetSteps, stepperDirection);
+  currentPos = stepper.currentPosition();
   lcd.setCursor(15, 3);
   lcd.print(currentPos, 3);
 }
@@ -143,33 +140,45 @@ float moveUpByStep() {
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
   lcd.setCursor(3, 2);
-  lcd.print("Move up 0.001");
-  Serial.println("Move up 0.001");
-  lcd.setCursor(0, 3);
-  lcd.print("Current Pos = ");
-  lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print("Move up 1 step");
+  Serial.println("Move up one step");
   delay(1000);
-  int speed = 500;
-  int accel = 5;
-  int targetSteps = 25;
+  int speed = 20;
+  int accel = 0;
+  int targetSteps = 1;
   int stepperDirection = 1;
   stepper.setMaxSpeed(speed);
   stepper.setAcceleration(accel);
-  stepper.moveTo(targetSteps);
   moveRouter(targetSteps, stepperDirection);
+  lcd.setCursor(0, 3);
+  lcd.print("Current Pos =");
+  lcd.setCursor(15, 3);
+  lcd.print(currentPos, 3);
+  delay(1000);
 }
 
-//Move down one atep
+//Move down one step
 float moveDownByStep() {
   lcd.init();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
   lcd.setCursor(0, 2);
-  lcd.print("Move down 0.001");
-  Serial.println("Move down 0.001");
+  lcd.print("Move down 1 step");
+  Serial.println("Move down onestep");
   lcd.setCursor(0, 3);
   lcd.print("Current Pos = ");
+  lcd.setCursor(15, 3);
+  lcd.print(currentPos, 3);
+  delay(1000);
+  int speed = 20;
+  int accel = 0;
+  int targetSteps = 1;
+  int stepperDirection = -1;
+  stepper.setMaxSpeed(speed);
+  stepper.setAcceleration(accel);
+  moveRouter(targetSteps, stepperDirection);
+  lcd.setCursor(0, 3);
+  lcd.print("Current Pos =");
   lcd.setCursor(15, 3);
   lcd.print(currentPos, 3);
   delay(1000);
@@ -218,6 +227,17 @@ float bitChange() {
   lcd.setCursor(15, 3);
   lcd.print(currentPos, 3);
   delay(1000);
+  int speed = 400;
+  int accel = 800;
+  int targetSteps = 5000;
+  int stepperDirection = 1;
+  stepper.setMaxSpeed(speed);
+  stepper.setAcceleration(accel);
+  //Cakk moveRouter to move down to Park position
+  moveRouter(targetSteps, stepperDirection);
+  currentPos = stepper.currentPosition();
+  lcd.setCursor(15, 3);
+  lcd.print(currentPos, 3);
 }
 
 //Move router up until bit touches plate
@@ -239,9 +259,10 @@ float zeroSet() {
   int stepperDirection = 1;
   stepper.setMaxSpeed(speed);
   stepper.setAcceleration(accel);
-  //  stepper.moveTo(targetSteps,stepperDirection);
+  //  Call moveRouter to move up to touch zero plate
   moveRouter(targetSteps, stepperDirection);
   currentPos = 0;
+  stepper.setCurrentPosition(0);
   lcd.setCursor(15, 3);
   lcd.print(currentPos, 3);
 }
@@ -295,7 +316,7 @@ float cutMortise() {
 float moveToDepth(int pressedKey) {
   lcd.init();
   float inch;
-  float TargetDepth;
+  float targetDepth;
   float inputKey[4] {0, 0, 0, 0};
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
@@ -317,17 +338,28 @@ float moveToDepth(int pressedKey) {
     delay(250);
   }
 
-  TargetDepth = inputKey[0] + inputKey[1] / 10 + inputKey[2] / 100 + inputKey[3] / 1000;
+  targetDepth = inputKey[0] + inputKey[1] / 10 + inputKey[2] / 100 + inputKey[3] / 1000;
   lcd.init();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
   lcd.setCursor(0, 2);
   lcd.print("Target Depth = ");
   lcd.setCursor(15, 2);
-  lcd.print(TargetDepth, 3);
+  lcd.print(targetDepth, 3);
   Serial.println("Calculated depth...");
   lcd.setCursor(0, 3);
   lcd.print("Current Pos = ");
+  lcd.setCursor(15, 3);
+  lcd.print(currentPos, 3);
+  int speed = 400;
+  int accel = 800;
+  int targetSteps = targetDepth;
+  int stepperDirection = -1;
+  stepper.setMaxSpeed(speed);
+  stepper.setAcceleration(accel);
+  // Call moveRouter to move down to Park position
+  moveRouter(targetSteps, stepperDirection);
+  currentPos = stepper.currentPosition();
   lcd.setCursor(15, 3);
   lcd.print(currentPos, 3);
 }
@@ -371,6 +403,7 @@ int getKey(int pressedKey) {
 int moveRouter(int targetSteps, int stepperDirection) {
   int readButton;
   //  Serial.println("tgt steps  curr pos  distance to go");
+  stepper.moveTo(targetSteps * stepperDirection);
   for (int i = 1; i = targetSteps; i++) {
     int currentPos = stepper.currentPosition();
     int distToGo = stepper.distanceToGo();
@@ -380,11 +413,10 @@ int moveRouter(int targetSteps, int stepperDirection) {
       Serial.println("Limit Switch Detected");
       break;
     }
-    if (targetSteps == currentPos) {
+    if (currentPos == targetSteps) {
       break;
     }
   }
-  stepper.setCurrentPosition(0);
   Serial.print("current position is: ");
   Serial.println(stepper.currentPosition());
 }
