@@ -5,6 +5,7 @@
     coverts input digits to x.xxx format variable
 */
 //I2C Libraries and setup
+#include <EEPROM.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27, 20, 4);
@@ -16,7 +17,7 @@ AccelStepper stepper; // Defaults to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4
 
 void setup() {
   Serial.begin(9600);
-  delay(dt / 2);
+  delay(dt);
   // initialize the lcd
   lcd.init();
   // Print a message to the LCD.
@@ -78,10 +79,10 @@ void loop() {
     moveDownByStep();
   }
   if (pressedButton == 5) {
-    moveUp();
+    moveUp(pressedButton);
   }
   if (pressedButton == 6) {
-    moveDown();
+    moveDown(pressedButton);
   }
   if (pressedButton == 7) {
     bitChange();
@@ -132,44 +133,53 @@ float moveToPark() {
 //Move up by one step
 float moveUpByStep() {
   int currentSteps = stepper.currentPosition();
-  int currentPos;
+  int currentPosition;
   lcd.init();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
   lcd.setCursor(3, 2);
   lcd.print("Move up 1 step");
   Serial.println("Move up one step");
+  Serial.print("Button 3:currentPosition: ");
+  Serial.println(currentSteps);
   delay(dt * 2);
   int speed = 20;
   int accel = 0;
-  int targetSteps = 1;
+  int targetSteps = currentSteps + 1;
+  Serial.print("Button 3:targetSteps: ");
+  Serial.println(targetSteps);
   int stepperDirection = 1;
   stepper.setMaxSpeed(speed);
   stepper.setAcceleration(accel);
-  moveRouter(targetSteps, stepperDirection);
+  stepper.moveTo(targetSteps * stepperDirection);
+  stepper.run();
   currentSteps = stepper.currentPosition();
-  currentPos = stepsToInches(currentSteps);
+  currentPosition = stepsToInches(currentSteps);
+  Serial.print("Button 3:currentPosition: ");
+  Serial.println(currentSteps);
   lcd.setCursor(0, 3);
   lcd.print("Current Pos =");
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(currentPosition, 3);
   delay(dt * 2);
 }
 
 //Move down one step
 float moveDownByStep() {
   int currentSteps = stepper.currentPosition();
-  int currentPos;
+  int currentPosition;
   lcd.init();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
   lcd.setCursor(0, 2);
   lcd.print("Move down 1 step");
-  Serial.println("Move down onestep");
+  Serial.println("Button 4:Move down onestep");
+  Serial.print("Button 4:currentPosition: ");
+  Serial.println(currentSteps);
   lcd.setCursor(0, 3);
   lcd.print("Current Pos = ");
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(currentPosition, 3);
   delay(dt * 2);
   int speed = 20;
   int accel = 0;
@@ -177,58 +187,83 @@ float moveDownByStep() {
   int stepperDirection = -1;
   stepper.setMaxSpeed(speed);
   stepper.setAcceleration(accel);
-  moveRouter(targetSteps, stepperDirection);
+  stepper.moveTo(targetSteps * stepperDirection);
+  stepper.run();
   currentSteps = stepper.currentPosition();
-  currentPos = stepsToInches(currentSteps);
+  currentPosition = stepsToInches(currentSteps);
+  Serial.print("Button 3:currentPosition: ");
+  Serial.println(currentSteps);
   lcd.setCursor(0, 3);
   lcd.print("Current Pos =");
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(currentPosition, 3);
   delay(dt * 2);
 }
 
 //Move up while button is pushed
-float moveUp() {
+float moveUp(int pressedButton) {
+  Serial.print("Button 5:pressedButton: ");
+  Serial.println(pressedButton);
+  int readButton = 0;
+  int readPin = 44;
   int currentSteps = stepper.currentPosition();
-  int currentPos;
+  int currentPosition;
   lcd.init();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
   lcd.setCursor(0, 2);
   lcd.print("Move up");
   Serial.println("Move up....");
+  //continue to move while button 5 is pressed
+  while (readButton == 0) {
+    readButton = digitalRead(readPin);
+    stepper.moveTo(currentSteps + 1);
+    currentSteps = currentSteps + 1;
+    stepper.run();
+  }
   currentSteps = stepper.currentPosition();
-  currentPos = stepsToInches(currentSteps);
+  currentPosition = stepsToInches(currentSteps);
   lcd.setCursor(0, 3);
   lcd.print("Current Pos = ");
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(currentPosition, 3);
   delay(dt * 2);
 }
 
 //Move down while button is pushed
-float moveDown() {
+float moveDown(int pressedButton) {
+  Serial.print("Button 5:pressedButton: ");
+  Serial.println(pressedButton);
+  int readButton = 0;
+  int readPin = 45;
   int currentSteps = stepper.currentPosition();
-  int currentPos;
+  int currentPosition;
   lcd.init();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
   lcd.setCursor(0, 2);
   lcd.print("Move down");
-  Serial.println("Move down...");
+  Serial.println("Move down....");
+  //continue to move while button 6 is pressed
+  while (readButton == 0) {
+    readButton = digitalRead(readPin);
+    stepper.moveTo(currentSteps - 1);
+    currentSteps = currentSteps - 1;
+    stepper.run();
+  }
   currentSteps = stepper.currentPosition();
-  currentPos = stepsToInches(currentSteps);
+  currentPosition = stepsToInches(currentSteps);
   lcd.setCursor(0, 3);
   lcd.print("Current Pos = ");
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(currentPosition, 3);
   delay(dt * 2);
 }
 
 //Move router up to change bit
 float bitChange() {
   int currentSteps = stepper.currentPosition();
-  int currentPos;
+  int currentPosition;
   lcd.init();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
@@ -238,7 +273,7 @@ float bitChange() {
   lcd.setCursor(0, 3);
   lcd.print("Current Pos = ");
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(currentPosition, 3);
   delay(dt * 2);
   int speed = 400;
   int accel = 800;
@@ -249,15 +284,15 @@ float bitChange() {
   //Call moveRouter to move down to Park position
   moveRouter(targetSteps, stepperDirection);
   currentSteps = stepper.currentPosition();
-  currentPos = stepsToInches(currentSteps);
+  currentPosition = stepsToInches(currentSteps);
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(currentPosition, 3);
 }
 
 //Move router up until bit touches plate
 float zeroSet() {
   int currentSteps = stepper.currentPosition();
-  int currentPos;
+  int currentPosition;
   lcd.init();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
@@ -267,7 +302,7 @@ float zeroSet() {
   lcd.setCursor(0, 3);
   lcd.print("Current Pos = ");
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(currentPosition, 3);
   delay(dt * 2);
   int speed = 400;
   int accel = 800;
@@ -278,66 +313,119 @@ float zeroSet() {
   //  Call moveRouter to move up to touch zero plate
   moveRouter(targetSteps, stepperDirection);
   currentSteps = stepper.currentPosition();
-  currentPos = 0;
+  currentPosition = 0;
   stepper.setCurrentPosition(0);
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(currentPosition, 3);
+  Serial.print("new current position is: ");
+  currentSteps = stepper.currentPosition();
+  Serial.println(currentSteps);
 }
 
 //Save current position to Memory Location
 float memorySave() {
   int currentSteps = stepper.currentPosition();
-  int currentPos;
+  float currentPosition;
+  int memoryLocation;
+  int pressedKey;
   lcd.init();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
   lcd.setCursor(0, 2);
-  lcd.print("Save to memory");
-  Serial.println("Memory Save");
+  lcd.print("Enter 0-9");
+  Serial.println("Button 9:Memory Save");
   currentSteps = stepper.currentPosition();
-  currentPos = stepsToInches(currentSteps);
+  Serial.print("Button 9:before converting to inches, currentSteps: ");
+  Serial.println(currentSteps);
+  currentPosition = stepsToInches(currentSteps);
+  memoryLocation = getKey(pressedKey);
+  EEPROM.put(memoryLocation, currentSteps);
+  Serial.print("Button 9;memory location: ");
+  Serial.println(memoryLocation);
+  Serial.print("Button 9:after converting to inches, currentSteps: ");
+  Serial.println(currentSteps);
+  Serial.print("Button 9:currentPosition: ");
+  Serial.println(currentPosition);
+  lcd.setCursor(0, 2);
+  lcd.print("Saved to #");
+  lcd.setCursor(10, 2);
+  lcd.print(memoryLocation);
   lcd.setCursor(0, 3);
   lcd.print("Current Pos = ");
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(currentPosition, 3);
   delay(dt * 2);
 }
 
 //Recall Memory Location and move route to that position
 float memoryRecall() {
-  int currentSteps = stepper.currentPosition();
-  int currentPos;
+  Serial.println("Button 10:Memory Recall");
+  int currentSteps;
+  int recalledSteps;
+  float currentPosition;
+  float recalledPosition;
+  float targetSteps;
+  int memoryLocation;
+  int pressedKey;
+  int stepperDirection;
   lcd.init();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
   lcd.setCursor(0, 2);
-  lcd.print("Recall from memory");
-  Serial.println("Memory Recall");
+  lcd.print("Enter 0-9");
+  memoryLocation = getKey(pressedKey);
+  Serial.print("Button 10;memory location: ");
+  Serial.println(memoryLocation);
+  EEPROM.get(memoryLocation, recalledSteps);
+  recalledPosition = stepsToInches(recalledSteps);
   currentSteps = stepper.currentPosition();
-  currentPos = stepsToInches(currentSteps);
+  currentPosition = stepsToInches(currentSteps);
+  Serial.print("Button 10:recalledSteps: ");
+  Serial.println(recalledSteps);
+  Serial.print("Button 10:recalledPosition: ");
+  Serial.println(recalledPosition);
+  Serial.print("Button 10:currentSteps: ");
+  Serial.println(currentSteps);
+  Serial.print("Button 10:currentPosition: ");
+  Serial.println(currentPosition);
+  if (recalledSteps > currentSteps) {
+    stepperDirection = -1;
+    targetSteps = recalledSteps - currentSteps*stepperDirection;
+  }
+  if (currentSteps > recalledSteps) {
+    stepperDirection = 1;
+    targetSteps = currentSteps - recalledSteps * stepperDirection;
+  }
+  int speed = 400;
+  int accel = 800;
+  stepper.setMaxSpeed(speed);
+  stepper.setAcceleration(accel);
+  moveRouter(targetSteps, stepperDirection);
+  currentSteps = stepper.currentPosition();
+  float inchesFromSteps = stepsToInches(currentSteps);
   lcd.setCursor(0, 3);
   lcd.print("Current Pos = ");
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(inchesFromSteps, 3);
   delay(dt * 2);
 }
 
 //Move router up by step to cut a mortise
 float cutMortise() {
   int currentSteps = stepper.currentPosition();
-  int currentPos;
+  int currentPosition;
   lcd.init();
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
   lcd.setCursor(0, 2);
   lcd.print("Cut a mortise");
   Serial.println("Cut a mortise....");
-  currentSteps=stepper.currentPosition();
-  currentPos=stepsToInches(currentSteps);
+  currentSteps = stepper.currentPosition();
+  currentPosition = stepsToInches(currentSteps);
   lcd.setCursor(0, 3);
   lcd.print("Current Pos = ");
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(currentPosition, 3);
   delay(dt * 2);
 }
 
@@ -346,18 +434,18 @@ float moveToDepth(int pressedKey) {
   lcd.init();
   float inch;
   int currentSteps = stepper.currentPosition();
-  int currentPos;
+  int currentPosition = stepsToInches(currentSteps);
   float targetDepth;
   float inputKey[4] {0, 0, 0, 0};
   lcd.setCursor(2, 0);
   lcd.print("Router Lift V1.0");
   lcd.setCursor(0, 2);
   lcd.print("Enter the depth:");
-  Serial.print("Enter depth...");
+  Serial.println("Button 1:Enter depth...");
   lcd.setCursor(0, 3);
   lcd.print("Current Pos = ");
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(currentPosition, 3);
   //Call the getKey subroutine to get keys pressed on the keypad
   for (int i = 0; i <= 3; i++) {
     pressedKey = getKey(pressedKey);
@@ -378,23 +466,41 @@ float moveToDepth(int pressedKey) {
   lcd.print("Target Depth = ");
   lcd.setCursor(15, 2);
   lcd.print(targetDepth, 3);
-  Serial.println("Calculated depth...");
+  Serial.print("Button #1:Calculated depth: ");
+  Serial.println(targetDepth, 3);
   lcd.setCursor(0, 3);
   lcd.print("Current Pos = ");
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(currentPosition, 3);
   int speed = 400;
   int accel = 800;
-  int targetSteps = targetDepth;
-  int stepperDirection = -1;
+  Serial.print("Button #1:currentPosition: ");
+  Serial.println(stepper.currentPosition());
+  int targetSteps = inchesToSteps(targetDepth);
+  int stepperDirection;
+  if (targetDepth > currentPosition) {
+    stepperDirection = 1;
+    targetDepth = targetDepth - currentPosition;
+  }
+  if (currentPosition > targetDepth) {
+    stepperDirection = -1;
+    targetDepth = currentPosition - targetDepth * stepperDirection;
+  }
+  Serial.print("Button #1:targetSteps: ");
+  Serial.println(targetSteps);
+  Serial.print("Button #1:stepperDirection: ");
+  Serial.println(stepperDirection);
   stepper.setMaxSpeed(speed);
   stepper.setAcceleration(accel);
-  // Call moveRouter to move down to Park position
   moveRouter(targetSteps, stepperDirection);
   currentSteps = stepper.currentPosition();
-  currentPos=stepsToInches(currentSteps);
+  float inchesFromSteps = stepsToInches(currentSteps);
+  Serial.print("Button #1:after moving, currentSteps: ");
+  Serial.println(currentSteps);
+  Serial.print("Button #1:converted to inches: ");
+  Serial.println(inchesFromSteps, 3);
   lcd.setCursor(15, 3);
-  lcd.print(currentPos, 3);
+  lcd.print(inchesFromSteps, 3);
 }
 
 //Subroutine to loop until a button is pressed
@@ -435,25 +541,33 @@ int getKey(int pressedKey) {
 //Subroutine to move the router with the stepper motor
 int moveRouter(int targetSteps, int stepperDirection) {
   int readButton;
-  //  Serial.println("tgt steps  curr pos  distance to go");
+  Serial.print("moveRouter:steps to move: ");
+  Serial.println(targetSteps);
   stepper.moveTo(targetSteps * stepperDirection);
   for (int i = 1; i = targetSteps; i++) {
     int currentSteps = stepper.currentPosition();
     int currentPos;
     int distToGo = stepper.distanceToGo();
+    //    Serial.println("currentSteps   targetSteps   distToGo");
+    //    Serial.print("      ");
+    //    Serial.print(currentSteps);
+    //    Serial.print("           ");
+    //    Serial.print(targetSteps);
+    //    Serial.print("          ");
+    //    Serial.println(distToGo);
     stepper.run();
-    currentSteps=stepper.currentPosition();
-    currentPos=stepsToInches(currentSteps);
+    currentSteps = stepper.currentPosition();
     readButton = digitalRead(35);
     if (readButton == 0) {
-      Serial.println("Limit Switch Detected");
+      Serial.println("moveRouter:Limit Switch Detected");
       break;
     }
-    if (currentPos == targetSteps) {
+    if (currentSteps == targetSteps) {
+      currentPos = stepsToInches(currentSteps);
       break;
     }
   }
-  Serial.print("current position is: ");
+  Serial.print("moveRouter:finished moving, position is: ");
   Serial.println(stepper.currentPosition());
 }
 
@@ -461,12 +575,24 @@ int moveRouter(int targetSteps, int stepperDirection) {
 float stepsToInches(int stepsToConvert) {
   float distancePerStep = 0.000625;
   float inchesFromSteps = stepsToConvert * distancePerStep;
+  Serial.print("stepsToInches:stepsToConvert: ");
+  Serial.println(stepsToConvert);
+  Serial.print("stepsToInches:calculated inches: ");
+  Serial.println(inchesFromSteps, 3);
   return inchesFromSteps;
 }
 
 //Subroutine to convert inches to steps
-float inchesToConvert(float inchesToConvert) {
+float inchesToSteps(float inchesToConvert) {
   float distancePerStep = 0.000625;
-  float stepsFromInches = inchesToConvert / distancePerStep;
+  float steps = inchesToConvert / distancePerStep;
+  int stepsFromInches = (int) steps;
+  if (steps - stepsFromInches > 0.5) {
+    stepsFromInches = stepsFromInches + 1;
+  }
+  Serial.print("inchesToSteps:unrounded steps from inches: ");
+  Serial.println(steps);
+  Serial.print("inchesToSteps:steps from inches: ");
+  Serial.println(stepsFromInches);
   return stepsFromInches;
 }
