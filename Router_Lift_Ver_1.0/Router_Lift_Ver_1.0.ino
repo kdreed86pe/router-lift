@@ -7,6 +7,7 @@
 //I2C Libraries and setup
 #include <EEPROM.h>
 #include <Wire.h>
+#include <math.h>
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 //AccelStepper Library and setup
@@ -390,7 +391,7 @@ float memoryRecall() {
   Serial.println(currentPosition);
   if (recalledSteps > currentSteps) {
     stepperDirection = -1;
-    targetSteps = recalledSteps - currentSteps*stepperDirection;
+    targetSteps = recalledSteps - currentSteps * stepperDirection;
   }
   if (currentSteps > recalledSteps) {
     stepperDirection = 1;
@@ -410,24 +411,103 @@ float memoryRecall() {
   delay(dt * 2);
 }
 
-//Move router up by step to cut a mortise
+//Move router up to cut a mortise
 float cutMortise() {
   int currentSteps = stepper.currentPosition();
-  int currentPosition;
+  float currentPosition = stepsToInches(currentSteps);
+  int numberOfCuts;
+  int pressedKey;
+  float targetDepth;
+  float inch;
+  float cutDepth;
+  int targetSteps;
+  int stepperDirection = 1;
+  float inputKey[4] {0, 0, 0, 0};
   lcd.init();
-  lcd.setCursor(2, 0);
-  lcd.print("Router Lift V1.0");
   lcd.setCursor(0, 2);
-  lcd.print("Cut a mortise");
-  Serial.println("Cut a mortise....");
-  currentSteps = stepper.currentPosition();
-  currentPosition = stepsToInches(currentSteps);
+  lcd.print("Enter the depth:");
+  Serial.println("Button 11:Enter depth...");
   lcd.setCursor(0, 3);
   lcd.print("Current Pos = ");
   lcd.setCursor(15, 3);
   lcd.print(currentPosition, 3);
+  //Call the getKey subroutine to get keys pressed on the keypad
+  for (int i = 0; i <= 3; i++) {
+    pressedKey = getKey(pressedKey);
+    inputKey[i] = pressedKey;
+    inch = inputKey[i];
+    if (inch == 99) {
+      inputKey[i] = 0;
+      break;
+    }
+    delay(dt / 2);
+  }
+  //assemble the depth value from the individual numbers entered on the keypad
+  targetDepth = inputKey[0] + inputKey[1] / 10 + inputKey[2] / 100 + inputKey[3] / 1000;
+  Serial.print("targetDepth is: ");
+  Serial.println(targetDepth, 3);
+  currentSteps = stepper.currentPosition();
+  currentPosition = stepsToInches(currentSteps);
+  lcd.init();
+  lcd.setCursor(0, 2);
+  lcd.print("Mortise Depth=");
+  lcd.setCursor(14, 2);
+  lcd.print(targetDepth, 3);
+  lcd.setCursor(0, 3);
+  lcd.print("Current Pos = ");
+  lcd.setCursor(15, 3);
+  lcd.print(currentPosition, 3);
+  float maxStep = 0.125;
+  int trialNumberOfCuts = round(targetDepth / maxStep);
+  Serial.print("Button 11:trialNumberOfCuts= :");
+  Serial.println(trialNumberOfCuts);
+  float checkDepthOfCut = targetDepth / trialNumberOfCuts;
+  if (checkDepthOfCut > maxStep) {
+    numberOfCuts = trialNumberOfCuts + 1;
+  }
+  if (checkDepthOfCut <= maxStep) {
+    numberOfCuts = trialNumberOfCuts;
+  }
+  Serial.println(" ");
+  Serial.print("Button 11:numberOfCuts= ");
+  Serial.println(numberOfCuts);
+  float depthOfCut = targetDepth / numberOfCuts;
+  currentSteps = stepper.currentPosition();
+  currentPosition = stepsToInches(currentSteps);
+  Serial.print("Button 11:maxStep= ");
+  Serial.println(maxStep, 3);
+  Serial.print("Button 11:targetDepth= ");
+  Serial.println(targetDepth, 3);
+  Serial.print("Button 11:numberOfCuts= ");
+  Serial.println(numberOfCuts);
+  Serial.print("Button 11:depthOfCut= ");
+  Serial.println(depthOfCut, 3);
   delay(dt * 2);
+  Serial.println("going to for loop....");
+  for (int i = 0; i <= numberOfCuts - 1; i++) {
+    Serial.print("for loop - i= ");
+    Serial.println(i);
+    lcd.setCursor(0, 0);
+    lcd.print("press pedal");
+    //Serial.println("Button 11:got a Foot Pedal Press!");
+    getFootPedalPress();
+    cutDepth = currentPosition + depthOfCut;
+    targetSteps = inchesToSteps(cutDepth);
+    moveRouter(targetSteps, stepperDirection);
+    currentSteps = stepper.currentPosition();
+    currentPosition = stepsToInches(currentSteps);
+    lcd.setCursor(0,3);
+    lcd.print("Current Pos = ");
+    lcd.setCursor(15,3);
+    lcd.print(currentPosition,3);
+    Serial.print("Button 11:currentPosition= ");
+    Serial.println(currentPosition);
+  }
+  Serial.println("Button 11:Done with Mortise");
+  Serial.print("Button 11:currentPosition= ");
+  Serial.println(currentPosition);
 }
+
 
 //Move router to the depth entered on the keypad
 float moveToDepth(int pressedKey) {
@@ -514,8 +594,22 @@ int getButton(int pressedButton) {
       readButton = digitalRead(i + 40);
       if (readButton == 0) {
         pressedButton = i + 1;
+        Serial.println("getButton:got a button!");
         return pressedButton;
       }
+    }
+  }
+}
+
+//Subroutine to wait for a foot pedal press
+void getFootPedalPress() {
+  int readFootPedal = 1;
+  int gotFootPedalPress = 0;
+  while (gotFootPedalPress == 0) {
+    readFootPedal = digitalRead(35);
+    if (readFootPedal == 0) {
+      delay(dt);
+      return;
     }
   }
 }
@@ -531,6 +625,8 @@ int getKey(int pressedKey) {
     for (int i = 0; i <= 10; i++) {
       readPin = digitalRead(i + 22);
       if (readPin == 0) {
+        //Serial.print("getKey:got a keypress! ");
+        //Serial.println(i);
         pressedKey = pinValue[i];
         return pressedKey;
       }
