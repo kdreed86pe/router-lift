@@ -53,7 +53,13 @@ void setup() {
 }
 void loop() {
   // put your main code here, to run repeatedly:
-
+  int lcdRow;
+  lcdRow = 1;
+  clearLcdRow(lcdRow);
+  lcdRow = 2;
+  clearLcdRow(lcdRow);
+  lcdRow = 3;
+  clearLcdRow(lcdRow);
   int button;
   int myButton;
   int pressedButton = 0;
@@ -437,9 +443,9 @@ float memorySave() {
     lcdText = "Cancelled Save";
     textPosition = 3;
     writeTextToLcd(lcdRow, lcdText, textPosition);
-    delay(dt*4);
+    delay(dt * 4);
     clearLcdRow(lcdRow);
-    lcdRow=2;
+    lcdRow = 2;
     clearLcdRow(lcdRow);
   }
 }
@@ -461,7 +467,7 @@ float memoryRecall() {
   int textPosition = 0;
   writeTextToLcd(lcdRow, lcdText, textPosition);
   memoryLocation = getKey(pressedKey);
-  if (memoryLocation!=99) {
+  if (memoryLocation != 99) {
     Serial.print("Button 10;memory location: ");
     Serial.println(memoryLocation);
     //EEPROM.get(memoryLocation, recalledSteps);
@@ -518,9 +524,9 @@ float memoryRecall() {
     lcdText = "Cancelled Recall";
     textPosition = 2;
     writeTextToLcd(lcdRow, lcdText, textPosition);
-    delay(dt*4);
+    delay(dt * 4);
     clearLcdRow(lcdRow);
-    lcdRow=2;
+    lcdRow = 2;
     clearLcdRow(lcdRow);
   }
 }
@@ -626,21 +632,21 @@ float cutMortise() {
     moveRouter(targetSteps, stepperDirection);
     currentSteps = stepper.currentPosition();
     currentPosition = stepsToInches(currentSteps);;
-    lcdRow=2;
+    lcdRow = 2;
     clearLcdRow(lcdRow);
-    lcdText="Step ";
-    textPosition=0;
-    writeTextToLcd(lcdRow,lcdText,textPosition);
-    lcdData=i+1;
-    dataPosition=6;
-    int dataPrecision=0;
-    writeDataToLcd(lcdRow,lcdData,dataPosition,dataPrecision);
-    lcdText=" of ";
-    textPosition=7;
-    writeTextToLcd(lcdRow,lcdText,textPosition);
-    lcdData=numberOfCuts;
-    dataPosition=11;
-    writeDataToLcd(lcdRow,lcdData,dataPosition,dataPrecision);
+    lcdText = "Step ";
+    textPosition = 0;
+    writeTextToLcd(lcdRow, lcdText, textPosition);
+    lcdData = i + 1;
+    dataPosition = 6;
+    int dataPrecision = 0;
+    writeDataToLcd(lcdRow, lcdData, dataPosition, dataPrecision);
+    lcdText = " of ";
+    textPosition = 7;
+    writeTextToLcd(lcdRow, lcdText, textPosition);
+    lcdData = numberOfCuts;
+    dataPosition = 11;
+    writeDataToLcd(lcdRow, lcdData, dataPosition, dataPrecision);
     lcdText = "current Pos=";
     lcdRow = 3;
     clearLcdRow(lcdRow);
@@ -652,23 +658,23 @@ float cutMortise() {
     Serial.print("Button 11:currentPosition= ");
     Serial.println(currentPosition);
   }
-    stepperDirection=-1;
-    targetSteps = stepper.currentPosition();
-    moveRouter(targetSteps, stepperDirection);
-    Serial.print("Button 11:current pos at end: ");
-    Serial.println(stepper.currentPosition());
-    lcdRow=2;
+  stepperDirection = -1;
+  targetSteps = stepper.currentPosition();
+  moveRouter(targetSteps, stepperDirection);
+  Serial.print("Button 11:current pos at end: ");
+  Serial.println(stepper.currentPosition());
+  lcdRow = 2;
+  clearLcdRow(lcdRow);
+  lcdRow = 1;
+  clearLcdRow(lcdRow);
+  lcdText = "Cut another Y/N?";
+  textPosition = 2;
+  writeTextToLcd(lcdRow, lcdText, textPosition);
+  int yesOrNo = getKey(yesOrNo);
+  if (yesOrNo == 1) {
+    cutMortise();
     clearLcdRow(lcdRow);
-    lcdRow=1;
-    clearLcdRow(lcdRow);
-    lcdText="Cut another Y/N?";
-    textPosition=2;
-    writeTextToLcd(lcdRow,lcdText,textPosition);
-    int yesOrNo=getKey(yesOrNo);
-    if (yesOrNo==1){
-      cutMortise();
-      clearLcdRow(lcdRow);
-    }
+  }
   Serial.println("Button 11:Done with Mortise");
   Serial.print("Button 11:currentPosition= ");
   Serial.println(currentPosition);
