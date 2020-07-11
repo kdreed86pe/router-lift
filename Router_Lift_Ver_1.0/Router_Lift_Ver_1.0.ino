@@ -24,13 +24,13 @@ void setup() {
   lcd.init();
   // Print a message to the LCD.
   lcd.backlight();
-  int lcdRow=0;
-  String lcdText="Router Lift ";
-  int textPosition=2;
-  writeTextToLcd(lcdRow,lcdText,textPosition);
-  lcdText=versionNumber;
-  textPosition=14;
-  writeTextToLcd(lcdRow,lcdText,textPosition);
+  int lcdRow = 0;
+  String lcdText = "Router Lift ";
+  int textPosition = 2;
+  writeTextToLcd(lcdRow, lcdText, textPosition);
+  lcdText = versionNumber;
+  textPosition = 14;
+  writeTextToLcd(lcdRow, lcdText, textPosition);
 
   //set initial max speed and acceleration for the stepper motor
   int motorSpeed = 400;
@@ -108,9 +108,12 @@ void loop() {
 // Move the router down to the park position
 float moveToPark() {
   int currentSteps = stepper.currentPosition();
-  int currentPosition;
+  float currentPosition;
   Serial.println("Park....");
-  int lcdRow = 2;
+  int lcdRow = 3;
+  clearLcdRow(lcdRow);
+  lcdRow = 2;
+  clearLcdRow(lcdRow);
   int textPosition = 2;
   String lcdText = "Move down to park";
   writeTextToLcd(lcdRow, lcdText, textPosition);
@@ -125,22 +128,33 @@ float moveToPark() {
   moveRouter(targetSteps, stepperDirection);
   currentSteps = stepper.currentPosition();
   currentPosition = stepsToInches(currentSteps);
+  Serial.print("Button #2:currentSteps= ");
+  Serial.println(currentSteps);
+  Serial.print("Button #2:currentPosition= ");
+  Serial.println(currentPosition);
   //lcd.setCursor(15, 3);
   //lcd.print(currentPos, 3);
-  lcdText = "current Pos=";
+  lcdText = "Current Pos=";
   lcdRow = 3;
+  clearLcdRow(lcdRow);
   textPosition = 0;
-  int dataPosition = 13;
+  int dataPosition = 12;
   int dataPrecision = 3;
   float lcdData = currentPosition;
   writeToLcd(lcdRow, lcdText, lcdData, textPosition, dataPosition, dataPrecision);
+  lcdRow = 2;
+  clearLcdRow(lcdRow);
+  lcdText = "Parked";
+  textPosition = 6;
+  writeTextToLcd(lcdRow, lcdText, textPosition);
 }
 
 //Move up by one step
 float moveUpByStep() {
   int currentSteps = stepper.currentPosition();
-  int currentPosition;
+  float currentPosition;
   int lcdRow = 2;
+  clearLcdRow(lcdRow);
   String lcdText = "Move up 1 step";
   int textPosition = 3;
   writeTextToLcd(lcdRow, lcdText, textPosition);
@@ -164,6 +178,7 @@ float moveUpByStep() {
   Serial.println(currentSteps);
   lcdText = "current Pos=";
   lcdRow = 3;
+  clearLcdRow(lcdRow);
   textPosition = 0;
   int dataPosition = 13;
   int dataPrecision = 3;
@@ -175,8 +190,9 @@ float moveUpByStep() {
 //Move down one step
 float moveDownByStep() {
   int currentSteps = stepper.currentPosition();
-  int currentPosition;
+  float currentPosition;
   int lcdRow = 2;
+  clearLcdRow(lcdRow);
   String lcdText = "Move down 1 step";
   int textPosition = 0;
   writeTextToLcd(lcdRow, lcdText, textPosition);
@@ -185,6 +201,7 @@ float moveDownByStep() {
   Serial.println(currentSteps);
   lcdText = "current Pos=";
   lcdRow = 3;
+  clearLcdRow(lcdRow);
   textPosition = 0;
   int dataPosition = 13;
   int dataPrecision = 3;
@@ -205,6 +222,7 @@ float moveDownByStep() {
   Serial.println(currentSteps);
   lcdText = "current Pos=";
   lcdRow = 3;
+  clearLcdRow(lcdRow);
   textPosition = 0;
   dataPosition = 13;
   dataPrecision = 3;
@@ -220,9 +238,10 @@ float moveUp(int pressedButton) {
   int readButton = 0;
   int readPin = 44;
   int currentSteps = stepper.currentPosition();
-  int currentPosition;
+  float  currentPosition;
   //lcd.init();
   int lcdRow = 2;
+  clearLcdRow(lcdRow);
   String lcdText = "Move up...";
   int textPosition = 0;
   writeTextToLcd(lcdRow, lcdText, textPosition);
@@ -238,6 +257,7 @@ float moveUp(int pressedButton) {
   currentPosition = stepsToInches(currentSteps);
   lcdText = "Current Pos=";
   lcdRow = 3;
+  clearLcdRow(lcdRow);
   textPosition = 0;
   int dataPosition = 13;
   int dataPrecision = 3;
@@ -253,8 +273,9 @@ float moveDown(int pressedButton) {
   int readButton = 0;
   int readPin = 45;
   int currentSteps = stepper.currentPosition();
-  int currentPosition;
+  float  currentPosition;
   int lcdRow = 2;
+  clearLcdRow(lcdRow);
   String lcdText = "Move down...";
   int textPosition = 0;
   writeTextToLcd(lcdRow, lcdText, textPosition);
@@ -270,6 +291,7 @@ float moveDown(int pressedButton) {
   currentPosition = stepsToInches(currentSteps);
   lcdText = "current Pos=";
   lcdRow = 3;
+  clearLcdRow(lcdRow);
   textPosition = 0;
   int dataPosition = 13;
   int dataPrecision = 3;
@@ -281,14 +303,16 @@ float moveDown(int pressedButton) {
 //Move router up to change bit
 float bitChange() {
   int currentSteps = stepper.currentPosition();
-  int currentPosition;
+  float  currentPosition;
   int lcdRow = 2;
+  clearLcdRow(lcdRow);
   String lcdText = "Move up to chg bit";
   int textPosition = 0;
   writeTextToLcd(lcdRow, lcdText, textPosition);
   Serial.println("Bit change");
   lcdText = "current Pos=";
   lcdRow = 3;
+  clearLcdRow(lcdRow);
   textPosition = 0;
   int dataPosition = 13;
   int dataPrecision = 3;
@@ -307,6 +331,7 @@ float bitChange() {
   currentPosition = stepsToInches(currentSteps);
   lcdText = "current Pos=";
   lcdRow = 3;
+  clearLcdRow(lcdRow);
   textPosition = 0;
   dataPosition = 13;
   dataPrecision = 3;
@@ -317,14 +342,16 @@ float bitChange() {
 //Move router up until bit touches plate
 float zeroSet() {
   int currentSteps = stepper.currentPosition();
-  int currentPosition;
+  float  currentPosition;
   int lcdRow = 2;
+  clearLcdRow(lcdRow);
   String lcdText = "Move up to zero";
   int textPosition = 0;
   writeTextToLcd(lcdRow, lcdText, textPosition);
   Serial.println("Zero set");
   lcdText = "current Pos=";
   lcdRow = 3;
+  clearLcdRow(lcdRow);
   textPosition = 0;
   int dataPosition = 13;
   int dataPrecision = 3;
@@ -346,6 +373,7 @@ float zeroSet() {
   //lcd.print(currentPosition, 3);
   lcdText = "current Pos=";
   lcdRow = 3;
+  clearLcdRow(lcdRow);
   textPosition = 0;
   dataPosition = 13;
   dataPrecision = 3;
@@ -363,6 +391,7 @@ float memorySave() {
   int memoryLocation;
   int pressedKey;
   int lcdRow = 2;
+  clearLcdRow(lcdRow);
   String lcdText = "Enter number 0-9";
   int textPosition = 0;
   writeTextToLcd(lcdRow, lcdText, textPosition);
@@ -372,30 +401,47 @@ float memorySave() {
   Serial.println(currentSteps);
   currentPosition = stepsToInches(currentSteps);
   memoryLocation = getKey(pressedKey);
-  EEPROM.put(memoryLocation, currentSteps);
-  Serial.print("Button 9;memory location: ");
-  Serial.println(memoryLocation);
-  Serial.print("Button 9:after converting to inches, currentSteps: ");
-  Serial.println(currentSteps);
-  Serial.print("Button 9:currentPosition: ");
-  Serial.println(currentPosition);
-  clearLcdRow(2);
-  lcdRow = 2;
-  lcdText = "Saved to #";
-  textPosition = 0;
-  writeTextToLcd(lcdRow, lcdText, textPosition);
-  int lcdData = memoryLocation;
-  int dataPosition = 10;
-  int dataPrecision = 0;
-  writeDataToLcd(lcdRow, lcdData, dataPosition, dataPrecision);
-  lcdText = "current Pos=";
-  lcdRow = 3;
-  textPosition = 0;
-  dataPosition = 13;
-  dataPrecision = 3;
-  lcdData = currentPosition;
-  writeToLcd(lcdRow, lcdText, lcdData, textPosition, dataPosition, dataPrecision);
-  delay(dt * 2);
+  if (memoryLocation != 99) {
+    //EEPROM.put(memoryLocation, currentSteps);
+    Serial.print("Button 9;memory location: ");
+    Serial.println(memoryLocation);
+    Serial.print("Button 9:after converting to inches, currentSteps: ");
+    Serial.println(currentSteps);
+    Serial.print("Button 9:currentPosition: ");
+    Serial.println(currentPosition);
+    clearLcdRow(2);
+    lcdRow = 2;
+    clearLcdRow(lcdRow);
+    lcdText = "Saved to #";
+    textPosition = 0;
+    writeTextToLcd(lcdRow, lcdText, textPosition);
+    int lcdData = memoryLocation;
+    int dataPosition = 10;
+    int dataPrecision = 0;
+    writeDataToLcd(lcdRow, lcdData, dataPosition, dataPrecision);
+    lcdText = "current Pos=";
+    lcdRow = 3;
+    clearLcdRow(lcdRow);
+    textPosition = 0;
+    dataPosition = 13;
+    dataPrecision = 3;
+    lcdData = currentPosition;
+    writeToLcd(lcdRow, lcdText, lcdData, textPosition, dataPosition, dataPrecision);
+    delay(dt * 2);
+  }
+  else {
+    lcdRow = 3;
+    clearLcdRow(lcdRow);
+    lcdRow = 2;
+    clearLcdRow(lcdRow);
+    lcdText = "Cancelled Save";
+    textPosition = 3;
+    writeTextToLcd(lcdRow, lcdText, textPosition);
+    delay(dt*4);
+    clearLcdRow(lcdRow);
+    lcdRow=2;
+    clearLcdRow(lcdRow);
+  }
 }
 
 //Recall Memory Location and move route to that position
@@ -410,56 +456,73 @@ float memoryRecall() {
   int pressedKey;
   int stepperDirection;
   int lcdRow = 2;
+  clearLcdRow(lcdRow);
   String lcdText = "Enter number 0-9";
   int textPosition = 0;
   writeTextToLcd(lcdRow, lcdText, textPosition);
   memoryLocation = getKey(pressedKey);
-  Serial.print("Button 10;memory location: ");
-  Serial.println(memoryLocation);
-  EEPROM.get(memoryLocation, recalledSteps);
-  recalledPosition = stepsToInches(recalledSteps);
-  currentSteps = stepper.currentPosition();
-  currentPosition = stepsToInches(currentSteps);
-  Serial.print("Button 10:recalledSteps: ");
-  Serial.println(recalledSteps);
-  Serial.print("Button 10:recalledPosition: ");
-  Serial.println(recalledPosition);
-  Serial.print("Button 10:currentSteps: ");
-  Serial.println(currentSteps);
-  Serial.print("Button 10:currentPosition: ");
-  Serial.println(currentPosition);
-  if (recalledSteps > currentSteps) {
-    stepperDirection = -1;
-    targetSteps = recalledSteps - currentSteps * stepperDirection;
+  if (memoryLocation!=99) {
+    Serial.print("Button 10;memory location: ");
+    Serial.println(memoryLocation);
+    //EEPROM.get(memoryLocation, recalledSteps);
+    recalledPosition = stepsToInches(recalledSteps);
+    currentSteps = stepper.currentPosition();
+    currentPosition = stepsToInches(currentSteps);
+    Serial.print("Button 10:recalledSteps: ");
+    Serial.println(recalledSteps);
+    Serial.print("Button 10:recalledPosition: ");
+    Serial.println(recalledPosition);
+    Serial.print("Button 10:currentSteps: ");
+    Serial.println(currentSteps);
+    Serial.print("Button 10:currentPosition: ");
+    Serial.println(currentPosition);
+    if (recalledSteps > currentSteps) {
+      stepperDirection = -1;
+      targetSteps = recalledSteps - currentSteps * stepperDirection;
+    }
+    if (currentSteps > recalledSteps) {
+      stepperDirection = 1;
+      targetSteps = currentSteps - recalledSteps * stepperDirection;
+    }
+    int speed = 400;
+    int accel = 800;
+    stepper.setMaxSpeed(speed);
+    stepper.setAcceleration(accel);
+    moveRouter(targetSteps, stepperDirection);
+    currentSteps = stepper.currentPosition();
+    float inchesFromSteps = stepsToInches(currentSteps);
+    clearLcdRow(2);
+    lcdRow = 2;
+    clearLcdRow(lcdRow);
+    lcdText = "Recalled #";
+    textPosition = 0;
+    writeTextToLcd(lcdRow, lcdText, textPosition);
+    int lcdData = memoryLocation;
+    int dataPosition = 10;
+    int dataPrecision = 0;
+    writeDataToLcd(lcdRow, lcdData, dataPosition, dataPrecision);
+    lcdText = "current Pos=";
+    lcdRow = 3;
+    textPosition = 0;
+    dataPosition = 13;
+    dataPrecision = 3;
+    lcdData = currentPosition;
+    writeToLcd(lcdRow, lcdText, lcdData, textPosition, dataPosition, dataPrecision);
+    delay(dt * 2);
   }
-  if (currentSteps > recalledSteps) {
-    stepperDirection = 1;
-    targetSteps = currentSteps - recalledSteps * stepperDirection;
+  else {
+    lcdRow = 3;
+    clearLcdRow(lcdRow);
+    lcdRow = 2;
+    clearLcdRow(lcdRow);
+    lcdText = "Cancelled Recall";
+    textPosition = 2;
+    writeTextToLcd(lcdRow, lcdText, textPosition);
+    delay(dt*4);
+    clearLcdRow(lcdRow);
+    lcdRow=2;
+    clearLcdRow(lcdRow);
   }
-  int speed = 400;
-  int accel = 800;
-  stepper.setMaxSpeed(speed);
-  stepper.setAcceleration(accel);
-  moveRouter(targetSteps, stepperDirection);
-  currentSteps = stepper.currentPosition();
-  float inchesFromSteps = stepsToInches(currentSteps);
-  clearLcdRow(2);
-  lcdRow = 2;
-  lcdText = "Recalled #";
-  textPosition = 0;
-  writeTextToLcd(lcdRow, lcdText, textPosition);
-  int lcdData = memoryLocation;
-  int dataPosition = 10;
-  int dataPrecision = 0;
-  writeDataToLcd(lcdRow, lcdData, dataPosition, dataPrecision);
-  lcdText = "current Pos=";
-  lcdRow = 3;
-  textPosition = 0;
-  dataPosition = 13;
-  dataPrecision = 3;
-  lcdData = currentPosition;
-  writeToLcd(lcdRow, lcdText, lcdData, textPosition, dataPosition, dataPrecision);
-  delay(dt * 2);
 }
 
 //Move router up to cut a mortise
@@ -481,6 +544,7 @@ float cutMortise() {
   Serial.println("Button 11:Enter depth...");
   lcdText = "current Pos=";
   lcdRow = 3;
+  clearLcdRow(lcdRow);
   textPosition = 0;
   int dataPosition = 13;
   int dataPrecision = 3;
@@ -505,13 +569,15 @@ float cutMortise() {
   currentPosition = stepsToInches(currentSteps);
   lcdText = "Mortise Depth=";
   lcdRow = 2;
+  clearLcdRow(lcdRow);
   textPosition = 0;
   dataPosition = 14;
   dataPrecision = 3;
-  lcdData = currentPosition;
+  lcdData = targetDepth;
   writeToLcd(lcdRow, lcdText, lcdData, textPosition, dataPosition, dataPrecision);
   lcdText = "current Pos=";
   lcdRow = 3;
+  clearLcdRow(lcdRow);
   textPosition = 0;
   dataPosition = 13;
   dataPrecision = 3;
@@ -547,7 +613,8 @@ float cutMortise() {
   for (int i = 0; i <= numberOfCuts - 1; i++) {
     Serial.print("for loop - i= ");
     Serial.println(i);
-    lcdRow = 2;
+    lcdRow = 1;
+    clearLcdRow(lcdRow);
     clearLcdRow(lcdRow);
     lcdText = "Press pedal";
     textPosition = 4;
@@ -559,8 +626,24 @@ float cutMortise() {
     moveRouter(targetSteps, stepperDirection);
     currentSteps = stepper.currentPosition();
     currentPosition = stepsToInches(currentSteps);;
+    lcdRow=2;
+    clearLcdRow(lcdRow);
+    lcdText="Step ";
+    textPosition=0;
+    writeTextToLcd(lcdRow,lcdText,textPosition);
+    lcdData=i+1;
+    dataPosition=6;
+    int dataPrecision=0;
+    writeDataToLcd(lcdRow,lcdData,dataPosition,dataPrecision);
+    lcdText=" of ";
+    textPosition=7;
+    writeTextToLcd(lcdRow,lcdText,textPosition);
+    lcdData=numberOfCuts;
+    dataPosition=11;
+    writeDataToLcd(lcdRow,lcdData,dataPosition,dataPrecision);
     lcdText = "current Pos=";
     lcdRow = 3;
+    clearLcdRow(lcdRow);
     textPosition = 0;
     dataPosition = 13;
     dataPrecision = 3;
@@ -569,6 +652,23 @@ float cutMortise() {
     Serial.print("Button 11:currentPosition= ");
     Serial.println(currentPosition);
   }
+    stepperDirection=-1;
+    targetSteps = stepper.currentPosition();
+    moveRouter(targetSteps, stepperDirection);
+    Serial.print("Button 11:current pos at end: ");
+    Serial.println(stepper.currentPosition());
+    lcdRow=2;
+    clearLcdRow(lcdRow);
+    lcdRow=1;
+    clearLcdRow(lcdRow);
+    lcdText="Cut another Y/N?";
+    textPosition=2;
+    writeTextToLcd(lcdRow,lcdText,textPosition);
+    int yesOrNo=getKey(yesOrNo);
+    if (yesOrNo==1){
+      cutMortise();
+      clearLcdRow(lcdRow);
+    }
   Serial.println("Button 11:Done with Mortise");
   Serial.print("Button 11:currentPosition= ");
   Serial.println(currentPosition);
@@ -582,15 +682,17 @@ float moveToDepth(int pressedKey) {
   int currentPosition = stepsToInches(currentSteps);
   float targetDepth;
   float inputKey[4] {0, 0, 0, 0};
-  int lcdRow=2;
-  String lcdText="Enter the depth:";
-  int textPosition=0;
-  writeTextToLcd(lcdRow,lcdText,textPosition);
+  int lcdRow = 2;
+  clearLcdRow(lcdRow);
+  String lcdText = "Enter the depth:";
+  int textPosition = 0;
+  writeTextToLcd(lcdRow, lcdText, textPosition);
   Serial.println("Button 1:Enter depth...");
-  lcdText = "current Pos=";
+  lcdText = "Current Pos=";
   lcdRow = 3;
+  clearLcdRow(lcdRow);
   textPosition = 0;
-  int dataPosition = 13;
+  int dataPosition = 12;
   int dataPrecision = 3;
   float lcdData = currentPosition;
   writeToLcd(lcdRow, lcdText, lcdData, textPosition, dataPosition, dataPrecision);
@@ -607,19 +709,21 @@ float moveToDepth(int pressedKey) {
   }
   //assemble the depth value from the individual numbers entered on the keypad
   targetDepth = inputKey[0] + inputKey[1] / 10 + inputKey[2] / 100 + inputKey[3] / 1000;
-  lcdText = "Target depth=";
+  lcdText = "Target Depth=";
   lcdRow = 2;
+  clearLcdRow(lcdRow);
   textPosition = 0;
   dataPosition = 13;
   dataPrecision = 3;
-  lcdData = currentPosition;
+  lcdData = targetDepth;
   writeToLcd(lcdRow, lcdText, lcdData, textPosition, dataPosition, dataPrecision);
   Serial.print("Button #1:Calculated depth: ");
   Serial.println(targetDepth, 3);
-  lcdText = "current Pos=";
+  lcdText = "Current Pos=";
   lcdRow = 3;
+  //clearLcdRow(lcdRow);
   textPosition = 0;
-  dataPosition = 13;
+  dataPosition = 12;
   dataPrecision = 3;
   lcdData = currentPosition;
   writeToLcd(lcdRow, lcdText, lcdData, textPosition, dataPosition, dataPrecision);
@@ -650,11 +754,12 @@ float moveToDepth(int pressedKey) {
   Serial.println(currentSteps);
   Serial.print("Button #1:converted to inches: ");
   Serial.println(inchesFromSteps, 3);
-  lcdRow=3;
-  lcdData=inchesFromSteps;
-  dataPosition=13;
-  dataPrecision=3;
-  writeDataToLcd(lcdRow,lcdData,dataPosition,dataPrecision);
+  lcdRow = 3;
+  //clearLcdRow(lcdRow);
+  lcdData = inchesFromSteps;
+  dataPosition = 12;
+  dataPrecision = 3;
+  writeDataToLcd(lcdRow, lcdData, dataPosition, dataPrecision);
 }
 
 //Subroutine to loop until a button is pressed
@@ -787,8 +892,8 @@ float writeDataToLcd(int lcdRow, float lcdData, int dataPosition, int dataPrecis
   lcd.print(lcdData, dataPrecision);
 }
 //Subroutine to clear a line
-int clearLcdRow(int lcdRow){
-  String blankRow="                    ";
-  lcd.setCursor(0,lcdRow);
+int clearLcdRow(int lcdRow) {
+  String blankRow = "                    ";
+  lcd.setCursor(0, lcdRow);
   lcd.print(blankRow);
 }
