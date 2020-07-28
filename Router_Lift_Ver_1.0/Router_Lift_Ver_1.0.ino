@@ -56,10 +56,10 @@ void loop() {
   int lcdRow;
   lcdRow = 1;
   clearLcdRow(lcdRow);
-  lcdRow = 2;
-  clearLcdRow(lcdRow);
-  lcdRow = 3;
-  clearLcdRow(lcdRow);
+  //lcdRow = 2;
+  //clearLcdRow(lcdRow);
+  //lcdRow = 3;
+  //clearLcdRow(lcdRow);
   int button;
   int myButton;
   int pressedButton = 0;
@@ -658,9 +658,9 @@ float cutMortise() {
     Serial.print("Button 11:currentPosition= ");
     Serial.println(currentPosition);
   }
+  currentSteps=stepper.currentPosition();
   stepperDirection = -1;
-  targetSteps = stepper.currentPosition();
-  moveRouter(targetSteps, stepperDirection);
+  moveRouter(currentSteps,stepperDirection);
   Serial.print("Button 11:current pos at end: ");
   Serial.println(stepper.currentPosition());
   lcdRow = 2;
@@ -672,12 +672,12 @@ float cutMortise() {
   writeTextToLcd(lcdRow, lcdText, textPosition);
   int yesOrNo = getKey(yesOrNo);
   if (yesOrNo == 1) {
-    cutMortise();
     clearLcdRow(lcdRow);
+    cutMortise();
   }
   Serial.println("Button 11:Done with Mortise");
   Serial.print("Button 11:currentPosition= ");
-  Serial.println(currentPosition);
+  Serial.println(stepper.currentPosition());
 }
 
 
